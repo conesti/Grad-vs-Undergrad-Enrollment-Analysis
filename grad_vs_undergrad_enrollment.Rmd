@@ -1,0 +1,118 @@
+---
+title: "Grad vs. Undergrad Enrollment"
+author: "Chris Onesti"
+date: "April 9, 2019"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+#The tidyverse library is important for working with tidy data.
+
+library(tidyverse)
+
+#Dplyr is always a package I like to use in case I need to do some data restructuring.
+
+library(dplyr)
+
+#Since the data comes in excel form, one will need readxl to easily read the data in.
+
+library(readxl)
+
+```
+
+```{r plot, echo = FALSE}
+
+#One begins by reading in the excel file, which is downloaded and placed in the same directory as the folder.
+
+enrollment_spring_nineteen <- read_excel("2019_spring_enrollment.xlsx", skip = 3) %>% 
+  
+  #Next to clean the data, one removes the sum rows by specifically looking at nontrivial values of the Course Name variable.
+  
+  filter(!is.na(`Course Name`)) %>% 
+  
+  #Then, one is only interested in a subset of the data, so the data is subsetted here with undergraduate and graduate populations, as well as course departments.
+  
+  select(id =`Course ID`, title = `Course Title`, name = `Course Name`, Department = `Course Department`, undergrad = `UGrad`, grad = 'Grad') 
+
+#Next, one has another file from the previous year which will be useful to compare with the most recent year.
+
+enrollment_spring_eighteen <- read_excel("2018_spring_enrollment.xlsx", skip = 3) %>% 
+  
+  #Next to clean the data, one removes the sum rows by specifically looking at nontrivial values of the Course Name variable.
+  
+  filter(!is.na(`Course Name`)) %>% 
+  
+  #Then, one is only interested in a subset of the data, so the data is subsetted here with undergraduate and graduate populations, as well as course departments.
+  
+  select(id =`Course ID`, title = `Course Title`, name = `Course Name`, Department = `Course Department`, undergrad = `UGrad`, grad = 'Grad') 
+
+  #Next, the two datasets are combined and given an identifier label, which distingues them by year.
+
+  combined_dataset <- bind_rows("2018" = enrollment_spring_eighteen,"2019" = enrollment_spring_nineteen, .id = "year")
+```
+
+```{r graph, fig.align = "center", echo = FALSE}
+
+
+#For the plot, one begins with this new cleaned and merged dataset.
+
+combined_dataset  %>%
+  
+  #Next, to keep things simple, only the Econ and Gov departments.
+  
+  filter(Department %in% c("Economics", "Government")) %>%
+  
+  #Next, one is only interested in mixed courses (or courses with both undergraduate and graduate students).
+  
+  filter(undergrad > 0, grad > 0) %>%
+  
+  #Next one begins the plot, comparing populations of undergraduate and graduate students.
+  
+  ggplot(aes(x = grad, y = undergrad, color = Department)) + 
+  
+  #A point chart is a good option here because lots of data are being displayed and each course deomonstrates 2 values as its own data point.
+  
+  geom_point() + 
+  
+  #Next the x axis is scaled to a log scale because the data looked too sparse.
+  
+  scale_x_log10() + 
+  
+  #For the same reason, the y axis is scaled to log 10 as well.
+  
+  scale_y_log10() + 
+  
+  #In order to reduce clutter, the graph is then faceted by course.  This also allows for better cross-course comparisons.
+  
+  facet_wrap(~year) + 
+  
+  #Next, an informative title, subtitle, and caption are given to introduce the reader to the graph and explain where the data is from.
+  
+  labs(title = "Grad. and Undergrad. Enrollment Numbers for Mixed Spring Courses 2018-19", 
+       subtitle = "Each dot represents one course, sorted by year and colored by department.",
+       caption = "Source: Harvard Course Statistics") + 
+  
+  #Next, the x-axis is relabeled for aesthetic purposes and to make it clear that it measures student counts.
+  
+  xlab("Number of Graduate Students") + 
+  
+  #Similarly, the y-axis is also relabeled.
+  
+  ylab("Number of Undergraduate Students") + 
+
+  #Next the title is centered for aesthetic purposes.
+  
+  theme(plot.title = element_text(hjust = 0.5)) +
+  
+  #The subtitle is also centered for aesthetic purposes.
+  
+  theme(plot.subtitle = element_text(hjust = 0.5)) + 
+  
+  #Next the color palette is changed to the second set in order to add variability.
+  
+  scale_color_brewer(palette = "Set2")
+```
+
