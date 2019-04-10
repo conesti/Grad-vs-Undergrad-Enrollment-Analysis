@@ -93,7 +93,7 @@ combined_dataset  %>%
   
   labs(title = "Harvard Grad. and Undergrad. Enrollment for Mixed Spring Courses 2018-19", 
        subtitle = "Each dot represents one course, sorted by year and colored by department.",
-       caption = "Source: Harvard Course Statistics") + 
+       caption = "Source: Harvard Registrar") + 
   
   #Next, the x-axis is relabeled for aesthetic purposes and to make it clear that it measures student counts.
   
@@ -114,5 +114,8 @@ combined_dataset  %>%
   #Next the color palette is changed to the second set in order to add variability.
   
   scale_color_brewer(palette = "Set2")
+
+#Collaborators: Beau Meche, Seeam Noor, Debi Gonzalez, Andres De Loera Brust
 ```
+
 
